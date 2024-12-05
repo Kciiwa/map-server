@@ -51,34 +51,53 @@
 
 // api/villas.js
 const { Client } = require("@notionhq/client");
+const cors = require("cors");
 
 const notion = new Client({
   auth: process.env.NOTION_API_KEY, // используем переменную окружения для ключа API
 });
 
+// Инициализация CORS
+const allowedOrigins = [
+  "https://phuket-map-git-main-tatyanas-projects-28495ff0.vercel.app", // Ваш фронтенд
+];
+
+const options = {
+  origin: (origin, callback) => {
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+};
+
 module.exports = async (req, res) => {
-  try {
-    const databaseId = "148822df79338003abedd7cf4258a02c"; // ID базы данных
+  // Применение CORS
+  cors(options)(req, res, async () => {
+    try {
+      const databaseId = "148822df79338003abedd7cf4258a02c"; // ID базы данных
 
-    // Запрос к базе данных Notion
-    const response = await notion.databases.query({
-      database_id: databaseId,
-    });
+      // Запрос к базе данных Notion
+      const response = await notion.databases.query({
+        database_id: databaseId,
+      });
 
-    const formattedData = response.results.map((item) => ({
-      name: item.properties.name.title[0].text.content, // Имя объекта
-      id: item.properties.ID.unique_id.number, // ID объекта
-      location: item.properties.location.rich_text[0].text.content, // Ссылка на локацию
-      coordinates: item.properties.coordinates.rich_text[0].text.content, // Координаты
-      availability: item.properties.доступность.checkbox, // Доступность
-    }));
+      const formattedData = response.results.map((item) => ({
+        name: item.properties.name.title[0].text.content, // Имя объекта
+        id: item.properties.ID.unique_id.number, // ID объекта
+        location: item.properties.location.rich_text[0].text.content, // Ссылка на локацию
+        coordinates: item.properties.coordinates.rich_text[0].text.content, // Координаты
+        availability: item.properties.доступность.checkbox, // Доступность
+      }));
 
-    // Отправка данных на фронтенд
-    res.status(200).json(formattedData);
-  } catch (error) {
-    console.error("Error fetching villas:", error);
-    res
-      .status(500)
-      .json({ message: "Internal Server Error", error: error.message });
-  }
+      // Отправка данных на фронтенд
+      res.status(200).json(formattedData);
+    } catch (error) {
+      console.error("Error fetching villas:", error);
+      res
+        .status(500)
+        .json({ message: "Internal Server Error", error: error.message });
+    }
+  });
 };
