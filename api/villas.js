@@ -59,7 +59,7 @@ const notion = new Client({
 
 // Инициализация CORS
 const allowedOrigins = [
-  "https://phuket-map-git-main-tatyanas-projects-28495ff0.vercel.app", // Ваш фронтенд
+  "https://phuket-map-tatyanas-projects-28495ff0.vercel.app/", // Ваш фронтенд
 ];
 
 const options = {
